@@ -396,12 +396,6 @@ const PokemonList = () => {
 
   return (
     <PageWrapper>
-      <MainCard>
-        <Header>
-          <Pokeball src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Pokeball" />
-          <Title>Pokédex</Title>
-        </Header>
-
         <Filters>
           <FilterRow>
             <FilterGroup>
@@ -483,7 +477,6 @@ const PokemonList = () => {
         </PokemonGrid>
         {loading && <Spinner />}
         {!loading && pokemons.length === 0 && <NoResult>Aucun résultat trouvé.</NoResult>}
-      </MainCard>
     </PageWrapper>
   );
 };
