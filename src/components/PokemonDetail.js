@@ -2,146 +2,218 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
+import { typeIcons } from '../utils/typeIcons';
+import { typeColors } from '../utils/typeColors';
+import { typeTranslate } from '../utils/typeTranslate';
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+const PageWrapper = styled.div`
+  max-width: 600px;
+  margin: 40px auto 0 auto;
+  min-height: 80vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 32px 24px 40px 24px;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(44,62,80,0.12);
+  @media (max-width: 700px) {
+    padding: 12px 2px 24px 2px;
+  }
 `;
 
 const BackButton = styled.button`
-  padding: 10px 20px;
-  background-color: #3498db;
+  padding: 10px 22px;
+  background: linear-gradient(90deg, #3498db 60%, #6dd5fa 100%);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
   cursor: pointer;
-  margin-bottom: 20px;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: #2980b9;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+  transition: background 0.2s, transform 0.2s;
+  &:hover, &:focus {
+    background: linear-gradient(90deg, #217dbb 60%, #3498db 100%);
+    transform: translateY(-2px) scale(1.04);
+    outline: none;
   }
 `;
 
 const PokemonHeader = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 30px;
+  gap: 18px;
   margin-bottom: 30px;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
+  padding: 20px 0 10px 0;
+  background: #f8f9fa;
+  border-radius: 12px;
 `;
 
 const PokemonImage = styled.img`
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-`;
-
-const PokemonInfo = styled.div`
-  flex: 1;
+  background: white;
+  padding: 18px;
+  border-radius: 50%;
+  box-shadow: 0 4px 24px #c3cfe2;
+  margin-bottom: 8px;
 `;
 
 const PokemonName = styled.h1`
   margin: 0 0 10px 0;
   color: #2c3e50;
-  font-size: 2em;
+  font-size: 2.1em;
+  font-weight: 800;
+  text-align: center;
   text-transform: capitalize;
 `;
 
 const PokemonTypes = styled.div`
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
 `;
 
-const TypeBadge = styled.span`
-  background-color: #3498db;
-  color: white;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 0.9em;
-  text-transform: capitalize;
+const TypeBadge = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${props => typeColors[props.type]};
+  padding: 4px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.10);
+  img {
+    filter: brightness(0) invert(1);
+    width: 22px;
+    height: 22px;
+  }
 `;
 
 const StatsContainer = styled.div`
   margin-top: 30px;
-  padding: 20px;
+  padding: 20px 10px;
   background-color: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 12px;
 `;
 
-const StatBar = styled.div`
-  margin-bottom: 15px;
+const statColors = {
+  hp: '#4caf50',
+  attack: '#e53935',
+  defense: '#fbc02d',
+  speed: '#039be5',
+  specialattack: '#8e24aa',
+  specialdefense: '#43a047',
+  special_attack: '#8e24aa',
+  special_defense: '#43a047',
+};
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
 `;
 
-const StatLabel = styled.div`
+const StatChip = styled.div`
+  background: ${({ stat }) => statColors[stat.toLowerCase().replace(/\s|_/g, '')] || '#3498db'}22;
+  border: 2px solid ${({ stat }) => statColors[stat.toLowerCase().replace(/\s|_/g, '')] || '#3498db'};
+  border-radius: 16px;
+  padding: 16px 10px 10px 10px;
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  color: #2c3e50;
-  font-weight: 500;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  box-shadow: 0 1px 4px rgba(44,62,80,0.07);
 `;
 
-const StatProgress = styled.div`
-  height: 10px;
-  background-color: #e9ecef;
-  border-radius: 5px;
-  overflow: hidden;
+const StatName = styled.div`
+  font-size: 1em;
+  font-weight: 600;
+  color: ${({ stat }) => statColors[stat.toLowerCase().replace(/\s|_/g, '')] || '#3498db'};
+  margin-bottom: 6px;
+  text-align: center;
 `;
 
-const StatFill = styled.div`
-  height: 100%;
-  background-color: #3498db;
-  width: ${props => props.value}%;
-  transition: width 0.3s ease;
+const StatValue = styled.div`
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #222;
 `;
 
 const EvolutionsContainer = styled.div`
   margin-top: 30px;
-  padding: 20px;
+  padding: 20px 10px;
   background-color: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 12px;
 `;
 
-const EvolutionChain = styled.div`
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  margin-top: 20px;
-  justify-content: center;
-`;
-
-const EvolutionCard = styled.div`
+const EvoTitle = styled.h2`
+  margin-bottom: 10px;
   text-align: center;
+`;
+
+const EvoGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  justify-content: center;
+  margin-top: 18px;
+`;
+
+const EvoCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+  padding: 18px 12px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
   cursor: pointer;
-  background-color: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.22s cubic-bezier(.4,2,.6,1);
+  &:hover, &:focus {
+    transform: translateY(-5px) scale(1.07);
+    box-shadow: 0 8px 24px rgba(44,62,80,0.18);
+    outline: none;
+  }
+  img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 2px 8px #c3cfe2);
+  }
+  div {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1em;
+    margin-top: 2px;
   }
 `;
 
-const LoadingSpinner = styled.div`
+const EvoNone = styled.div`
   text-align: center;
-  padding: 40px;
-  color: #2c3e50;
-  font-size: 1.2em;
+  color: #888;
+  font-size: 1.1em;
+  margin: 24px 0 0 0;
+`;
+
+const Spinner = styled.div`
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 32px auto 0 auto;
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 `;
 
 const PokemonDetail = () => {
@@ -161,63 +233,74 @@ const PokemonDetail = () => {
         setLoading(false);
       }
     };
-
     fetchPokemon();
   }, [id]);
 
   if (loading) {
-    return <LoadingSpinner>Chargement...</LoadingSpinner>;
+    return <Spinner />;
   }
 
   if (!pokemon) {
     return <div>Pokémon non trouvé</div>;
   }
 
+  let statsArray = [];
+  if (Array.isArray(pokemon.stats)) {
+    statsArray = pokemon.stats;
+  } else if (pokemon.stats && typeof pokemon.stats === 'object') {
+    statsArray = Object.entries(pokemon.stats).map(([name, value]) => ({ name, value }));
+  }
+
   return (
-    <Container>
-      <BackButton onClick={() => navigate('/')}>← Retour à la liste</BackButton>
-      
+    <PageWrapper>
+      <BackButton onClick={() => navigate('/')} aria-label="Retour à la liste">← Retour à la liste</BackButton>
       <PokemonHeader>
         <PokemonImage src={pokemon.image} alt={pokemon.name} />
-        <PokemonInfo>
-          <PokemonName>{pokemon.name}</PokemonName>
-          <PokemonTypes>
-            {pokemon.types.map(type => (
-              <TypeBadge key={type.id}>{type.name}</TypeBadge>
-            ))}
-          </PokemonTypes>
-        </PokemonInfo>
+        <PokemonName>{pokemon.name}</PokemonName>
+        <PokemonTypes>
+          {pokemon.types.map(type => {
+            const typeKey = typeTranslate[type.name.toLowerCase()] || 'normal';
+            return (
+              <TypeBadge key={type.id} type={typeKey} title={type.name}>
+                <img src={typeIcons[typeKey]} alt={type.name} />
+              </TypeBadge>
+            );
+          })}
+        </PokemonTypes>
       </PokemonHeader>
-
       <StatsContainer>
         <h2>Statistiques</h2>
-        {pokemon.stats.map(stat => (
-          <StatBar key={stat.name}>
-            <StatLabel>
-              <span>{stat.name}</span>
-              <span>{stat.value}</span>
-            </StatLabel>
-            <StatProgress>
-              <StatFill value={(stat.value / 255) * 100} />
-            </StatProgress>
-          </StatBar>
-        ))}
+        <StatsGrid>
+          {statsArray.map(stat => (
+            <StatChip key={stat.name} stat={stat.name}>
+              <StatName stat={stat.name}>{stat.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</StatName>
+              <StatValue>{stat.value}</StatValue>
+            </StatChip>
+          ))}
+        </StatsGrid>
       </StatsContainer>
-
-      {pokemon.evolutions && pokemon.evolutions.length > 0 && (
-        <EvolutionsContainer>
-          <h2>Évolutions</h2>
-          <EvolutionChain>
+      <EvolutionsContainer>
+        <EvoTitle>Évolutions</EvoTitle>
+        {pokemon.evolutions && pokemon.evolutions.length > 0 ? (
+          <EvoGrid>
             {pokemon.evolutions.map(evolution => (
-              <EvolutionCard key={evolution.id} onClick={() => navigate(`/pokemon/${evolution.id}`)}>
-                <img src={evolution.image} alt={evolution.name} style={{ width: '100px', height: '100px' }} />
+              <EvoCard key={evolution.id} tabIndex={0} aria-label={`Voir ${evolution.name}`}
+                onClick={() => navigate(`/pokemon/${evolution.id}`)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`/pokemon/${evolution.id}`); }}
+              >
+                <img
+                  src={evolution.image || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'}
+                  alt={evolution.name}
+                />
                 <div>{evolution.name}</div>
-              </EvolutionCard>
+              </EvoCard>
             ))}
-          </EvolutionChain>
-        </EvolutionsContainer>
-      )}
-    </Container>
+          </EvoGrid>
+        ) : (
+          <EvoNone>Aucune évolution</EvoNone>
+        )}
+      </EvolutionsContainer>
+    </PageWrapper>
   );
 };
 
