@@ -10,16 +10,14 @@ const gradientBg = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
-  background: ${gradientBg};
   padding: 0;
 `;
 
 const MainCard = styled.div`
-  max-width: 1300px;
+  max-width: 100%;
   margin: 40px auto 0 auto;
   background: white;
   border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(44,62,80,0.12);
   padding: 32px 24px 40px 24px;
   @media (max-width: 900px) {
     padding: 16px 4px;
@@ -35,7 +33,7 @@ const Header = styled.div`
 `;
 
 const Pokeball = styled.img`
-  width: 48px;
+  width: auto;
   height: 48px;
 `;
 
@@ -239,69 +237,67 @@ const PokemonList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
   const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
 
-  const fetchTypes = async () => {
-    try {
-      const response = await axios.get('https://nestjs-pokedex-api.vercel.app/types');
-      setTypes(response.data);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des types:', error);
-    }
-  };
-
-  const fetchPokemons = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = {
-        page,
-        limit,
-        ...(nameFilter && { name: nameFilter }),
-        ...(selectedTypes.length > 0 && { types: selectedTypes }),
-      };
-
-      const response = await axios.get('https://nestjs-pokedex-api.vercel.app/pokemons', { params });
-      setPokemons(prev => [...prev, ...response.data]);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des Pokémon:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, nameFilter, selectedTypes]);
-
   useEffect(() => {
+    const fetchTypes = async () => {
+      try {
+        const response = await axios.get('https://nestjs-pokedex-api.vercel.app/types');
+        setTypes(response.data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des types:', error);
+      }
+    };
     fetchTypes();
   }, []);
 
   useEffect(() => {
     setPokemons([]);
     setPage(1);
-  }, [limit]);
+    setHasMore(true);
+  }, [nameFilter, selectedTypes, limit]);
 
   useEffect(() => {
-    if (pokemons.length === 0) {
-      fetchPokemons();
-    }
-    // eslint-disable-next-line
-  }, [limit]);
-
-  useEffect(() => {
+    const fetchPokemons = async () => {
+      setLoading(true);
+      try {
+        const params = {
+          page,
+          limit,
+          ...(nameFilter && { name: nameFilter }),
+          ...(selectedTypes.length > 0 && { types: selectedTypes }),
+        };
+        const response = await axios.get('https://nestjs-pokedex-api.vercel.app/pokemons', { params });
+        if (page === 1) {
+          setPokemons(response.data);
+        } else {
+          setPokemons(prev => [...prev, ...response.data]);
+        }
+        setHasMore(response.data.length === limit);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des Pokémon:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPokemons();
-  }, [page]);
-
-  const handleScroll = useCallback(() => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop
-      === document.documentElement.offsetHeight
-    ) {
-      setPage(prev => prev + 1);
-    }
-  }, []);
+    // eslint-disable-next-line
+  }, [page, nameFilter, selectedTypes, limit]);
 
   useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 100 &&
+        !loading && hasMore
+      ) {
+        setPage(prev => prev + 1);
+      }
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  }, [loading, hasMore]);
 
   const handleTypeClick = (typeId) => {
     setSelectedTypes(prev => {
