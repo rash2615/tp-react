@@ -217,8 +217,14 @@ const PokemonList = () => {
   useEffect(() => {
     setPokemons([]);
     setPage(1);
-    fetchPokemons();
-  }, [nameFilter, selectedTypes]);
+  }, [limit]);
+
+  useEffect(() => {
+    if (pokemons.length === 0) {
+      fetchPokemons();
+    }
+    // eslint-disable-next-line
+  }, [limit]);
 
   useEffect(() => {
     fetchPokemons();
