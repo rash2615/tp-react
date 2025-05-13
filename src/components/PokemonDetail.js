@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
@@ -132,6 +132,22 @@ const StatValue = styled.div`
   color: #222;
 `;
 
+const StatBar = styled.div`
+  width: 100%;
+  height: 10px;
+  background: #e9ecef;
+  border-radius: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+`;
+
+const StatBarFill = styled.div`
+  height: 100%;
+  background: ${({ stat }) => statColors[stat.toLowerCase().replace(/\s|_/g, '')] || '#3498db'};
+  border-radius: 6px;
+  transition: width 1.2s cubic-bezier(.4,2,.6,1);
+`;
+
 const EvolutionsContainer = styled.div`
   background-color: white;
   border-radius: 12px;
@@ -223,6 +239,41 @@ const BackButton = styled.button`
   }
 `;
 
+function useAnimatedNumber(target, duration = 1000) {
+  const [value, setValue] = React.useState(0);
+  const ref = useRef();
+  React.useEffect(() => {
+    let start;
+    function animate(ts) {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      setValue(Math.floor(progress * target));
+      if (progress < 1) {
+        ref.current = requestAnimationFrame(animate);
+      } else {
+        setValue(target);
+      }
+    }
+    ref.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(ref.current);
+  }, [target, duration]);
+  return value;
+}
+
+function AnimatedStatChip({ stat }) {
+  const animatedValue = useAnimatedNumber(Number(stat.value), 1200);
+  const percent = Math.min((animatedValue / 255) * 100, 100);
+  return (
+    <StatChip stat={stat.name}>
+      <StatName stat={stat.name}>{stat.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</StatName>
+      <StatValue>{animatedValue}</StatValue>
+      <StatBar>
+        <StatBarFill stat={stat.name} style={{ width: percent + '%' }} />
+      </StatBar>
+    </StatChip>
+  );
+}
+
 const PokemonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -281,10 +332,7 @@ const PokemonDetail = () => {
             <h2>Statistiques</h2>
             <StatsGrid>
               {statsArray.map(stat => (
-                <StatChip key={stat.name} stat={stat.name}>
-                  <StatName stat={stat.name}>{stat.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</StatName>
-                  <StatValue>{stat.value}</StatValue>
-                </StatChip>
+                <AnimatedStatChip key={stat.name} stat={stat} />
               ))}
             </StatsGrid>
           </StatsContainer>
