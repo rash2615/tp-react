@@ -1,0 +1,22 @@
+export const typeTranslate = {
+  normal: 'normal',
+  combat: 'fighting',
+  vol: 'flying',
+  poison: 'poison',
+  sol: 'ground',
+  roche: 'rock',
+  insecte: 'bug',
+  spectre: 'ghost',
+  acier: 'steel',
+  feu: 'fire',
+  eau: 'water',
+  plante: 'grass',
+  electrik: 'electric',
+  psy: 'psychic',
+  glace: 'ice',
+  dragon: 'dragon',
+  tenebres: 'dark',
+  fee: 'fairy',
+  inconnu: 'unknown',
+  ombre: 'shadow'
+}; 

@@ -1,3 +1,39 @@
+# Pokédex React
+
+Une application React moderne pour explorer le monde des Pokémon.
+
+## Fonctionnalités
+
+- Liste des Pokémon avec pagination infinie
+- Filtrage par nom et type(s)
+- Affichage détaillé des Pokémon
+- Statistiques avec barres de progression
+- Chaînes d'évolution
+- Interface utilisateur moderne et responsive
+
+## Installation
+
+1. Clonez le repository
+2. Installez les dépendances :
+```bash
+npm install
+```
+3. Lancez l'application :
+```bash
+npm start
+```
+
+## Technologies utilisées
+
+- React
+- React Router
+- Axios
+- Styled Components
+
+## API
+
+L'application utilise l'API Pokédex NestJS disponible à l'adresse : https://nestjs-pokedex-api.vercel.app
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
