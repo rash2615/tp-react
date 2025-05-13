@@ -44,16 +44,31 @@ const FooterLink = styled.a`
   }
 `;
 
+const FooterButton = styled.button`
+  color: #3498db;
+  background: none;
+  border: none;
+  font-weight: 600;
+  font-size: 1em;
+  cursor: pointer;
+  transition: color 0.2s;
+  &:hover, &:focus {
+    color: #217dbb;
+    text-decoration: underline;
+    outline: none;
+  }
+`;
+
 const Copyright = styled.div`
   font-size: 0.95em;
   color: #888;
 `;
 
-const Footer = () => (
+const Footer = ({ onPrivacyClick }) => (
   <FooterBar>
     <FooterContent>
       <FooterLinks>
-        <FooterLink href="#rgpd">Politique de confidentialité</FooterLink>
+        <FooterButton onClick={onPrivacyClick} aria-label="Ouvrir la politique de confidentialité">Politique de confidentialité</FooterButton>
         <FooterLink href="mailto:contact@pokedex.fr">Contactez-nous</FooterLink>
       </FooterLinks>
       <Rgpd>

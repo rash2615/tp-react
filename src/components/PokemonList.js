@@ -20,7 +20,7 @@ const MainCard = styled.div`
   border-radius: 24px;
   padding: 32px 24px 40px 24px;
   @media (max-width: 900px) {
-    padding: 16px 4px;
+    padding: 12px 2px 24px 2px;
   }
 `;
 
@@ -56,6 +56,16 @@ const Filters = styled.div`
   box-shadow: 0 2px 8px rgba(44,62,80,0.06);
   flex-wrap: wrap;
   justify-content: center;
+  @media (max-width: 900px) {
+    gap: 16px;
+    padding: 16px 2px;
+  }
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 10px 2px;
+  }
 `;
 
 const FilterGroup = styled.div`
@@ -63,6 +73,10 @@ const FilterGroup = styled.div`
   flex-direction: column;
   gap: 8px;
   min-width: 180px;
+  @media (max-width: 600px) {
+    min-width: unset;
+    width: 100%;
+  }
 `;
 
 const FilterLabel = styled.label`
@@ -119,6 +133,10 @@ const TypeFilterContainer = styled.div`
   gap: 12px;
   margin-top: 5px;
   max-width: 400px;
+  @media (max-width: 600px) {
+    max-width: 100%;
+    justify-content: flex-start;
+  }
 `;
 
 const TypeButton = styled.button`
@@ -135,10 +153,16 @@ const TypeButton = styled.button`
   justify-content: center;
   position: relative;
   box-shadow: ${props => props.selected ? '0 4px 12px rgba(44,62,80,0.12)' : '0 1px 2px rgba(44,62,80,0.04)'};
-  &:hover {
+  outline: none;
+  &:hover, &:focus {
     transform: scale(1.13) rotate(-6deg);
     box-shadow: 0 6px 18px rgba(44,62,80,0.18);
     z-index: 2;
+    border-color: #222;
+  }
+  &:focus-visible {
+    border: 2.5px solid #222;
+    box-shadow: 0 0 0 3px #b3dafe;
   }
   img {
     width: 26px;
@@ -178,6 +202,15 @@ const PokemonGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 28px;
   padding: 20px 0;
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 8px 0;
+  }
 `;
 
 const PokemonCard = styled.div`
@@ -227,6 +260,29 @@ const LoadingSpinner = styled.div`
   padding: 20px;
   color: #2c3e50;
   font-size: 1.2em;
+`;
+
+const Spinner = styled.div`
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 32px auto 0 auto;
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const NoResult = styled.div`
+  text-align: center;
+  color: #888;
+  font-size: 1.2em;
+  margin: 40px 0 0 0;
+  font-weight: 500;
 `;
 
 const PokemonList = () => {
@@ -320,11 +376,6 @@ const PokemonList = () => {
 
   return (
     <PageWrapper>
-      <MainCard>
-        <Header>
-          <Pokeball src="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png" alt="Pokeball" />
-          <Title>Pokédex</Title>
-        </Header>
         <Filters>
           <FilterGroup>
             <FilterLabel>Rechercher un Pokémon</FilterLabel>
@@ -351,6 +402,9 @@ const PokemonList = () => {
                     selected={selectedTypes.includes(type.id)}
                     onClick={() => handleTypeClick(type.id)}
                     title={type.name}
+                    aria-label={`Filtrer par type ${type.name}`}
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleTypeClick(type.id); }}
                   >
                     <img src={typeIcons[typeKey]} alt={type.name} />
                   </TypeButton>
@@ -388,8 +442,8 @@ const PokemonList = () => {
             </PokemonCard>
           ))}
         </PokemonGrid>
-        {loading && <LoadingSpinner>Chargement...</LoadingSpinner>}
-      </MainCard>
+        {loading && <Spinner />}
+        {!loading && pokemons.length === 0 && <NoResult>Aucun résultat trouvé.</NoResult>}
     </PageWrapper>
   );
 };

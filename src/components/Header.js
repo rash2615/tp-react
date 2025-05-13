@@ -44,26 +44,30 @@ const Title = styled.h1`
   letter-spacing: 1px;
 `;
 
-const RgpdLink = styled.a`
+const RgpdLink = styled.button`
   color: #3498db;
   font-weight: 600;
   text-decoration: none;
   font-size: 1.05em;
+  background: none;
+  border: none;
+  cursor: pointer;
   transition: color 0.2s;
-  &:hover {
+  &:hover, &:focus {
     color: #217dbb;
     text-decoration: underline;
+    outline: none;
   }
 `;
 
-const Header = () => (
+const Header = ({ onPrivacyClick }) => (
   <HeaderBar>
     <HeaderContent>
       <LogoTitle>
         <Pokeball src="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png" alt="Pokeball" />
         <Title>Pokédex</Title>
       </LogoTitle>
-      <RgpdLink href="#rgpd" title="Politique de confidentialité">Politique de confidentialité</RgpdLink>
+      <RgpdLink onClick={onPrivacyClick} aria-label="Ouvrir la politique de confidentialité">Politique de confidentialité</RgpdLink>
     </HeaderContent>
   </HeaderBar>
 );
